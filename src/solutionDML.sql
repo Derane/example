@@ -1,0 +1,1 @@
+SELECT * from Student WHERE id = 1;
