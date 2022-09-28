@@ -1,4 +1,4 @@
-package com.example.project;
+package com.example.project.SQLDML;
 
 import com.example.project.util.Student;
 import org.junit.jupiter.api.AfterEach;
@@ -19,7 +19,6 @@ public class CheckSQLSelect {
 
 	@BeforeEach
 	void setUp() throws SQLException {
-		// 1) connect to in-memory H2 db
 		connection = DriverManager.getConnection("jdbc:h2:mem:test");
 		statement = connection.createStatement();
 	}
@@ -33,7 +32,6 @@ public class CheckSQLSelect {
 	@DisplayName("Select student into student's table")
 	void checkSqlStatement() throws SQLException, IOException {
 
-		// 2) if needed, fill this db with example data
 		String sql = """
 				CREATE TABLE IF NOT EXISTS Student
 								(

@@ -40,11 +40,10 @@ class SqlTests {
 		connection.close();
 	}
 
-	@Test
 	void checkSqlStatement() throws SQLException, IOException {
 
 		// 2) if needed, fill this db with example data
-		String sql = "CREATE TABLE STUDENTS (ID int primary key, name varchar(50))";
+		String sql = "CREATE TABLE STUDENT (ID int primary key, name varchar(50))";
 		statement.execute(sql);
 		System.out.println("Created table students.");
 
@@ -54,7 +53,7 @@ class SqlTests {
 		//sql = "INSERT INTO STUDENTS (ID, name) VALUES (1, 'First'), (2, 'Second')";
 		int rows = statement.executeUpdate(sql);
 		// 4) compare the result of the execution of that statement -> pass or fail
-		assertEquals(3, rows);
+		assertEquals(1, rows);
 
 		// Example assertions with imaginary objects "result" and "row":
 		// assertEquals(3, result.getNumberOfRows());
