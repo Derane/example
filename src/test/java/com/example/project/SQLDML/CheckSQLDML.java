@@ -39,10 +39,10 @@ public class CheckSQLDML {
 								(
 								    id         INTEGER PRIMARY KEY,
 								    number_group             INTEGER,
-								    firstname TEXT,
-								    lastname  TEXT,
-								    birthdate DATE,
-								    adress     TEXT,
+								    first_name TEXT,
+								    last_name  TEXT,
+								    birth_date DATE,
+								    address     TEXT,
 								    average_grade               INTEGER
 								);
 				""";

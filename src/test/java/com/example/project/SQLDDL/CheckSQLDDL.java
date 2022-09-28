@@ -23,7 +23,7 @@ public class CheckSQLDDL {
 								    firstname TEXT,
 								    lastname  TEXT,
 								    birthdate DATE,
-								    adress     TEXT,
+								    address     TEXT,
 								    average_grade               INTEGER
 								);
 				""";

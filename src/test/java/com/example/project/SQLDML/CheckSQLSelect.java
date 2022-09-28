@@ -33,15 +33,15 @@ public class CheckSQLSelect {
 	void checkSqlStatement() throws SQLException, IOException {
 
 		String sql = """
-				CREATE TABLE IF NOT EXISTS Student
+					CREATE TABLE IF NOT EXISTS Student
 								(
-								    ID         INTEGER AUTO_INCREMENT PRIMARY KEY,
-								    Number             INTEGER,
-								    First_name_Student TEXT,
-								    Last_name_Student  TEXT,
-								    Birth_date_student DATE,
-								    Adress_student     TEXT,
-								    Pbal               INTEGER
+								    id         INTEGER PRIMARY KEY,
+								    number_group             INTEGER,
+								    first_name TEXT,
+								    last_name  TEXT,
+								    birth_date DATE,
+								    address     TEXT,
+								    average_grade               INTEGER
 								);
 				""";
 		statement.execute(sql);
