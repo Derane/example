@@ -1,39 +1,50 @@
 package com.example.project.SQLDDL;
 
+import com.example.project.util.JdbcUtils;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CheckSQLDDL {
+	private static DataSource dataSource;
+	private static Statement statement;
 
-	@Test
-	@DisplayName("Table student has been created")
-	void checkSqlStatement() throws IOException {
-
-		String rightSql = """
-				CREATE TABLE IF NOT EXISTS Student
-								(
-								    id         INTEGER PRIMARY KEY,
-								    number_group             INTEGER,
-								    firstname TEXT,
-								    lastname  TEXT,
-								    birthdate DATE,
-								    address     TEXT,
-								    average_grade               INTEGER
-								);
-				""";
-
-
-		String sql = Files.readString(Paths.get("solutionDDL.sql"));
-		assertTrue(sql.replaceAll("\\s+", "").trim()
-				.equalsIgnoreCase(rightSql.replaceAll("\\s+", "").trim()));
-
-
+	@BeforeAll
+	static void init() throws SQLException {
+		dataSource = JdbcUtils.createDefaultInMemoryH2DataSource();
+		statement = dataSource.getConnection().createStatement();
 	}
 
-}
+	@Test
+	@DisplayName("Table student has been created and have a name and PK")
+	void checkTableNameSqlStatement() throws IOException, SQLException {
+		String sql = Files.readString(Paths.get("solutionDDL.sql"));
+		statement.execute(sql);
+
+		ResultSet resultSet = statement.executeQuery("SHOW TABLES");
+		resultSet.next();
+		String tableName = resultSet.getString("table_name");
+
+		assertEquals("student", tableName);
+
+		resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
+				" WHERE table_name = 'student' AND constraint_type = 'PRIMARY_KEY';");
+
+		boolean resultIsNotEmpty = resultSet.next();
+
+		assertTrue(resultIsNotEmpty);
+	}
+	}
+
+
