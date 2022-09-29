@@ -53,7 +53,7 @@ public class CheckSQLSelect {
 		Student rightStudent = new Student(1, 3, "Vasya", "Petrov", Date.valueOf("2001-05-11"),
 				"City: Kyiv, adress: Novikova 6", 3.3);
 
-		sql = Files.readString(Paths.get("solutionDML.sql"));
+		sql = Files.readString(Paths.get("src\\solutionDML.sql"));
 
 		ResultSet resultSet = statement.executeQuery(sql);
 		resultSet.next();

@@ -49,7 +49,7 @@ public class CheckSQLDML {
 		statement.execute(sql);
 
 
-		sql = Files.readString(Paths.get("solution.sql"));
+		sql = Files.readString(Paths.get("src\\solution.sql"));
 
 		int rows = statement.executeUpdate(sql);
 

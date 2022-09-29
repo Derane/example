@@ -29,7 +29,7 @@ public class CheckSQLDDL {
 	@Test
 	@DisplayName("Table student has been created and have a name and PK")
 	void checkTableNameSqlStatement() throws IOException, SQLException {
-		String sql = Files.readString(Paths.get("solutionDDL.sql"));
+		String sql = Files.readString(Paths.get("src\\solutionDDL.sql"));
 		statement.execute(sql);
 
 		ResultSet resultSet = statement.executeQuery("SHOW TABLES");
