@@ -24,6 +24,7 @@ public class CheckSQLDML {
 		// 1) connect to in-memory H2 db
 		connection = DriverManager.getConnection("jdbc:h2:mem:test");
 		statement = connection.createStatement();
+
 	}
 
 	@AfterEach
@@ -49,7 +50,7 @@ public class CheckSQLDML {
 		statement.execute(sql);
 
 
-		sql = Files.readString(Paths.get("solution.sql"));
+		sql = Files.readString(Paths.get("src\\solution.sql"));
 
 		int rows = statement.executeUpdate(sql);
 

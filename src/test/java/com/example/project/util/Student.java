@@ -17,15 +17,9 @@ public class Student {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		Student student = (Student) o;
-		return Objects.equals(ID, student.ID) && Objects.equals(number, student.number) && Objects.equals(first_name_Student, student.first_name_Student)
-				&& Objects.equals(last_name_Student, student.last_name_Student) && Objects.equals(birth_date_student, student.birth_date_student)
-				&& Objects.equals(adress_student, student.adress_student) && Objects.equals(pbal, student.pbal);
+		return Objects.equals(ID, student.ID);
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(ID);
-	}
 
 	public Student(Integer ID, Integer number, String first_name_Student, String last_name_Student, Date birth_date_student, String adress_student, Double pbal) {
 		this.ID = ID;

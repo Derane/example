@@ -17,13 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.project.util.JdbcUtils.fetchColumnsNames;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CheckSQLDDL {
+public class CheckSQLDDL0 {
 	private static DataSource dataSource;
 	private static Statement statement;
 
@@ -32,32 +29,17 @@ public class CheckSQLDDL {
 		dataSource = JdbcUtils.createDefaultInMemoryH2DataSource();
 		statement = dataSource.getConnection().createStatement();
 		statement.execute(Files.readString(Paths.get("src\\solution0.sql")));
-		statement.execute(Files.readString(Paths.get("src\\solutionDDL.sql")));
 	}
 
 	@Test
 	@DisplayName("Table student has been created and have a correct name")
-	void testTableHasCorrectName() throws IOException, SQLException {
+	void testTableHasCorrectName() throws SQLException {
 
 		ResultSet resultSet = statement.executeQuery("SHOW TABLES");
 		resultSet.next();
 		String tableName = resultSet.getString("table_name");
 
-		assertEquals("student", tableName);
-	}
-
-	@Test
-	void testPrimaryKeyHasCorrectName() throws SQLException {
-		try (Connection connection = dataSource.getConnection()) {
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'student' AND constraint_type = 'PRIMARY_KEY';");
-
-			resultSet.next();
-			String pkConstraintName = resultSet.getString("constraint_name");
-
-			assertEquals("student_pk", pkConstraintName);
-		}
+		assertEquals("students_group", tableName);
 	}
 
 	@Test
@@ -65,7 +47,7 @@ public class CheckSQLDDL {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'student' AND constraint_type = 'PRIMARY_KEY';");
+					" WHERE table_name = 'students_group' AND constraint_type = 'PRIMARY_KEY';");
 
 			boolean resultIsNotEmpty = resultSet.next();
 
@@ -79,7 +61,7 @@ public class CheckSQLDDL {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'student' AND constraint_type = 'PRIMARY_KEY';");
+					" WHERE table_name = 'students_group' AND constraint_type = 'PRIMARY_KEY';");
 
 			resultSet.next();
 			String pkColumn = resultSet.getString("column_list");
@@ -89,46 +71,20 @@ public class CheckSQLDDL {
 	}
 
 	@Test
-	void testTableHasCorrectAlternativeKey() throws SQLException {
-		try (Connection connection = dataSource.getConnection()) {
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'student' AND constraint_type = 'UNIQUE';");
-
-			resultSet.next();
-			String uniqueConstraintName = resultSet.getString("constraint_name");
-			String uniqueConstraintColumn = resultSet.getString("column_list");
-
-			assertEquals("student_email_uq", uniqueConstraintName);
-			assertEquals("email", uniqueConstraintColumn);
-		}
-	}
-
-	@Test
 	void testTableHasAllRequiredColumns() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
-					" WHERE table_name = 'student';");
+					" WHERE table_name = 'students_group';");
 
 			List<String> columns = fetchColumnsNames(resultSet);
 
-			assertEquals(5, columns.size());
-			assertTrue(columns.containsAll(List.of("id", "email", "first_name", "last_name", "group_id")));
+			assertEquals(2, columns.size());
+			assertTrue(columns.containsAll(List.of("id", "name")));
 		}
 	}
 
-	@Test
-	void testProfilesHasForeignKeyToUsers() throws SQLException {
-		try (Connection connection = dataSource.getConnection()) {
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'student' AND constraint_type = 'REFERENTIAL' AND column_list = 'group_id';");
-			boolean resultIsNotEmpty = resultSet.next();
 
-			assertThat(resultIsNotEmpty, is(true));
-		}
-	}
 }
 
 
