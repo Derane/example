@@ -9,6 +9,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -21,30 +22,36 @@ public class CheckSQLDDL {
 	private static Statement statement;
 
 	@BeforeAll
-	static void init() throws SQLException {
+	static void init() throws SQLException, IOException {
 		dataSource = JdbcUtils.createDefaultInMemoryH2DataSource();
 		statement = dataSource.getConnection().createStatement();
+		statement.execute(Files.readString(Paths.get("src\\solutionDDL.sql")));
 	}
 
 	@Test
-	@DisplayName("Table student has been created and have a name and PK")
-	void checkTableNameSqlStatement() throws IOException, SQLException {
-		String sql = Files.readString(Paths.get("solutionDDL.sql"));
-		statement.execute(sql);
+	@DisplayName("Table student has been created and have a correct name")
+	void testTableHasCorrectName() throws IOException, SQLException {
 
 		ResultSet resultSet = statement.executeQuery("SHOW TABLES");
 		resultSet.next();
 		String tableName = resultSet.getString("table_name");
 
 		assertEquals("student", tableName);
-
-		resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-				" WHERE table_name = 'student' AND constraint_type = 'PRIMARY_KEY';");
-
-		boolean resultIsNotEmpty = resultSet.next();
-
-		assertTrue(resultIsNotEmpty);
 	}
+
+	@Test
+	void testTableHasPrimaryKey() throws SQLException {
+		try (Connection connection = dataSource.getConnection()) {
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
+					" WHERE table_name = 'student' AND constraint_type = 'PRIMARY_KEY';");
+
+			boolean resultIsNotEmpty = resultSet.next();
+
+			assertTrue(resultIsNotEmpty);
+		}
 	}
+
+}
 
 
