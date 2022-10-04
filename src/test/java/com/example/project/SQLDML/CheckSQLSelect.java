@@ -18,7 +18,7 @@ public class CheckSQLSelect {
 	private Statement statement;
 
 	@BeforeEach
-	void setUp() throws SQLException, IOException {
+	void setUp() throws SQLException {
 
 		connection = DriverManager.getConnection("jdbc:h2:mem:test");
 		statement = connection.createStatement();
@@ -48,11 +48,11 @@ public class CheckSQLSelect {
 		statement.execute(sql);
 		String anotherSql = """
 				INSERT INTO Student
-				values (1, 3, 'Vasya', 'Petrov', '2001-05-11', 'City: Kyiv, adress: Novikova 6', 3.3)
+				values (1, 3, 'Vasya', 'Petrov', '2001-05-11', 'City: Kyiv, address: Novikova 6', 3.3)
 				""";
 		statement.execute(anotherSql);
 		Student rightStudent = new Student(1, 3, "Vasya", "Petrov", Date.valueOf("2001-05-11"),
-				"City: Kyiv, adress: Novikova 6", 3.3);
+				"City: Kyiv, address: Novikova 6", 3.3);
 
 		sql = Files.readString(Paths.get("src\\solutionDML.sql"));
 
