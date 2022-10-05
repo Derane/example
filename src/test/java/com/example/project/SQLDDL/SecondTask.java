@@ -40,7 +40,7 @@ public class SecondTask {
 	@Test
 	@Order(1)
 	@DisplayName("The employee_chat table has correct name")
-	void libraryTableHasCorrectName() throws SQLException {
+	void employeeChatTableHasCorrectName() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 
@@ -54,7 +54,7 @@ public class SecondTask {
 	@Test
 	@Order(2)
 	@DisplayName("Column employee_id and chat_id exist and have type is Bigint")
-	void libraryIdTypeIsBigint() throws SQLException {
+	void employeeChatIdTypeIsBigint() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -69,7 +69,7 @@ public class SecondTask {
 	@Test
 	@Order(3)
 	@DisplayName("The table has not redundant columns")
-	void libraryTableHasAllRequiredColumns() throws SQLException {
+	void employeeChatTableHasAllRequiredColumns() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
@@ -129,7 +129,7 @@ public class SecondTask {
 	@Test
 	@Order(7)
 	@DisplayName("The table have all relations for proper column in the other tables")
-	void checkInsertIntoTable() throws SQLException {
+	void checkInsertIntoAllTableAndCheckOutputFromJoin() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			statement.execute("""
