@@ -21,10 +21,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 /**
- * Table should have a single-value identifier of type BIGINT, which is a primary key
- * also table should have 3 fields as 'name', 'author', 'isbn'
- * and you need match constraints(NOT NULL, UNIQUE and CREATE PK) for them
- * table name must be single (e.g. "library", not "libraries")
+ * Table should have 3 fields as 'name', 'author', 'isbn'
+ * and you need match constraints(NOT NULL and CREATE PK) for them
+ * table name must be plural (e.g. "books", not "book")
  * for text fields should use varchar(255)
  */
 public class FirstTask {
@@ -40,58 +39,42 @@ public class FirstTask {
 
 	@Test
 	@Order(1)
-	@DisplayName("The library table has correct name")
-	void libraryTableHasCorrectName() throws SQLException {
+	@DisplayName("The books table has correct name")
+	void booksTableHasCorrectName() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 
 			ResultSet resultSet = statement.executeQuery("SHOW TABLES");
 			var tableNames = fetchTableNames(resultSet);
 
-			Assertions.assertTrue(tableNames.contains("library"));
+			Assertions.assertTrue(tableNames.contains("books"));
 		}
 	}
 
 	@Test
 	@Order(2)
-	@DisplayName("Library Id type is Bigint")
-	void libraryIdTypeIsBigint() throws SQLException {
+	@DisplayName("The books table has all the required columns")
+	void booksTableHasAllRequiredColumns() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
-					" WHERE table_name = 'library' AND column_name = 'id';");
+					" WHERE table_name = 'books';");
 
-			resultSet.next();
-			String idTypeName = resultSet.getString("type_name");
+			List<String> columns = fetchColumnValues(resultSet, "column_name");
 
-			Assertions.assertEquals("BIGINT", idTypeName);
+			assertThat(columns.size()).isEqualTo(3);
+			assertThat(columns).containsExactlyInAnyOrder("name", "author", "isbn");
 		}
 	}
 
 	@Test
 	@Order(3)
-	@DisplayName("The library table has all the required columns")
-	void libraryTableHasAllRequiredColumns() throws SQLException {
-		try (Connection connection = dataSource.getConnection()) {
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
-					" WHERE table_name = 'library';");
-
-			List<String> columns = fetchColumnValues(resultSet, "column_name");
-
-			assertThat(columns.size()).isEqualTo(4);
-			assertThat(columns).containsExactlyInAnyOrder("id", "name", "author", "isbn");
-		}
-	}
-
-	@Test
-	@Order(4)
-	@DisplayName("The library table String columns have correct type and length")
-	void testLibraryTableStringColumnsHaveCorrectTypeAndLength() throws SQLException {
+	@DisplayName("The books table String columns have correct type and length")
+	void testBooksTableStringColumnsHaveCorrectTypeAndLength() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS" +
-					" WHERE table_name = 'library' AND type_name = 'VARCHAR' AND character_maximum_length = 255;");
+					" WHERE table_name = 'books' AND type_name = 'VARCHAR' AND character_maximum_length = 255;");
 
 			List<String> stringColumns = fetchColumnValues(resultSet, "column_name");
 
@@ -101,13 +84,13 @@ public class FirstTask {
 	}
 
 	@Test
-	@Order(5)
-	@DisplayName("The library table required columns have Not Null constrains")
-	void libraryTableRequiredColumnsHaveHaveNotNullConstraint() throws SQLException {
+	@Order(4)
+	@DisplayName("The books table required columns have Not Null constrains")
+	void booksTableRequiredColumnsHaveHaveNotNullConstraint() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
-					" WHERE table_name = 'library' AND nullable = false;");
+					" WHERE table_name = 'books' AND nullable = false;");
 
 			List<String> notNullColumns = fetchColumnValues(resultSet, "column_name");
 
@@ -115,30 +98,15 @@ public class FirstTask {
 		}
 	}
 
-	@Test
-	@Order(6)
-	@DisplayName("The library table required columns have unique constrains")
-	void libraryTableRequiredColumnsHaveHaveUniqueConstraint() throws SQLException {
-		try (Connection connection = dataSource.getConnection()) {
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'library' AND constraint_type = 'UNIQUE';");
-
-			resultSet.next();
-			String uniqueConstraintColumn = resultSet.getString("column_list");
-
-			assertThat(uniqueConstraintColumn).isEqualTo("isbn");
-		}
-	}
 
 	@Test
-	@Order(7)
+	@Order(5)
 	@DisplayName("The library table has primary key")
-	void libraryTablesHasPrimaryKey() throws SQLException {
+	void booksTablesHasPrimaryKey() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'library' AND constraint_type = 'PRIMARY_KEY';");
+					" WHERE table_name = 'books' AND constraint_type = 'PRIMARY_KEY';");
 
 			boolean resultIsNotEmpty = resultSet.next();
 
@@ -147,18 +115,18 @@ public class FirstTask {
 	}
 
 	@Test
-	@Order(8)
-	@DisplayName("The library table primary key based on field 'id ")
-	void libraryTableHasPrimaryKeyBasedOnProperField() throws SQLException {
+	@Order(6)
+	@DisplayName("The books table primary key based on field 'id ")
+	void booksTableHasPrimaryKeyBasedOnProperField() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'library' AND constraint_type = 'PRIMARY_KEY';");
+					" WHERE table_name = 'books' AND constraint_type = 'PRIMARY_KEY';");
 
 			resultSet.next();
 			String pkColumn = resultSet.getString("column_list");
 
-			assertThat("id", equalTo(pkColumn));
+			assertThat("isbn", equalTo(pkColumn));
 		}
 	}
 }
