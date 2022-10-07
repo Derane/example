@@ -39,6 +39,7 @@ public class JdbcUtils {
 		}
 		return columns;
 	}
+
 	public static List<String> fetchTableNames(ResultSet resultSet) throws SQLException {
 		List<String> tableNamesList = new ArrayList<>();
 		while (resultSet.next()) {
@@ -47,6 +48,7 @@ public class JdbcUtils {
 		}
 		return tableNamesList;
 	}
+
 	public static List<String> fetchColumnValues(ResultSet resultSet, String resultColumnName) throws SQLException {
 		List<String> columns = new ArrayList<>();
 		while (resultSet.next()) {

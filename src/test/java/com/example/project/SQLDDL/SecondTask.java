@@ -1,5 +1,6 @@
 package com.example.project.SQLDDL;
 
+import com.example.project.exception.NoneTableExistException;
 import com.example.project.util.JdbcUtils;
 import org.junit.jupiter.api.*;
 
@@ -13,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.example.project.util.JdbcUtils.fetchColumnValues;
 import static com.example.project.util.JdbcUtils.fetchTableNames;
@@ -28,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SecondTask {
 	private static DataSource dataSource;
 	private static Statement statement;
+	private static String tableName;
 
 	@BeforeAll
 	static void init() throws SQLException, IOException {
@@ -35,20 +38,20 @@ public class SecondTask {
 		statement = dataSource.getConnection().createStatement();
 		statement.execute(Files.readString(Paths.get("src\\prepareForSecondTask.sql")));
 		statement.execute(Files.readString(Paths.get("src\\solutionSecondTask.sql")));
+		ResultSet resultSet = statement.executeQuery("SHOW TABLES");
+		tableName = Optional.ofNullable(fetchTableNames(resultSet)
+						.stream()
+						.filter(tables -> !tables.equals("employee") && !tables.equals("chat"))
+						.toList()
+						.get(0))
+				.orElseThrow(NoneTableExistException::new);
 	}
 
 	@Test
 	@Order(1)
 	@DisplayName("The employee_chat table has correct name")
-	void employeeChatTableHasCorrectName() throws SQLException {
-		try (Connection connection = dataSource.getConnection()) {
-			Statement statement = connection.createStatement();
-
-			ResultSet resultSet = statement.executeQuery("SHOW TABLES");
-			var tableNames = fetchTableNames(resultSet);
-
-			Assertions.assertTrue(tableNames.contains("employee_chat"));
-		}
+	void employeeChatTableHasCorrectName() {
+		Assertions.assertEquals("employee_chat", tableName);
 	}
 
 	@Test
@@ -57,8 +60,8 @@ public class SecondTask {
 	void employeeChatIdTypeIsBigint() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
-					" WHERE table_name = 'employee_chat';");
+			ResultSet resultSet = statement.executeQuery(String.format("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
+					" WHERE table_name = '%s';", tableName));
 
 			List<String> columnTypes = fetchColumnValues(resultSet, "type_name");
 
@@ -72,8 +75,8 @@ public class SecondTask {
 	void employeeChatTableHasAllRequiredColumns() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
-					" WHERE table_name = 'employee_chat';");
+			ResultSet resultSet = statement.executeQuery(String.format("SELECT * FROM INFORMATION_SCHEMA.COLUMNS" +
+					" WHERE table_name = '%s';", tableName));
 
 			List<String> columns = fetchColumnValues(resultSet, "column_name");
 
@@ -87,8 +90,8 @@ public class SecondTask {
 	void employeeChatTableHasCompositePrimaryKey() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'employee_chat' AND constraint_type = 'PRIMARY_KEY';");
+			ResultSet resultSet = statement.executeQuery(String.format("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
+					" WHERE table_name = '%s' AND constraint_type = 'PRIMARY_KEY';", tableName));
 
 			resultSet.next();
 			String uniqueConstraintColumn = resultSet.getString("column_list");
@@ -103,8 +106,9 @@ public class SecondTask {
 	void employeeChatTablesHasForeignKeyToEmployee() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'employee_chat' AND constraint_type = 'REFERENTIAL' AND column_list = 'employee_id';");
+			ResultSet resultSet = statement.executeQuery(String.format("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
+							" WHERE table_name = '%s' AND constraint_type = 'REFERENTIAL' AND column_list = 'employee_id';"
+					, tableName));
 
 			boolean resultIsNotEmpty = resultSet.next();
 
@@ -114,35 +118,27 @@ public class SecondTask {
 
 	@Test
 	@Order(6)
-	@DisplayName("The relations table has a foreign key to the chat table")
+	@DisplayName("The table have all relations for proper column in the other tables")
 	void employeeChatTablesHasForeignKeyToChat() throws SQLException {
 		try (Connection connection = dataSource.getConnection()) {
 			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
-					" WHERE table_name = 'employee_chat' AND constraint_type = 'REFERENTIAL' AND column_list = 'chat_id';");
+			ResultSet resultSet = statement.executeQuery(String.format("SELECT * FROM INFORMATION_SCHEMA.CONSTRAINTS" +
+					" WHERE table_name = '%s' AND constraint_type = 'REFERENTIAL' AND column_list = 'chat_id';", tableName));
 
 			boolean resultIsNotEmpty = resultSet.next();
 			assertTrue(resultIsNotEmpty);
-		}
-	}
 
-	@Test
-	@Order(7)
-	@DisplayName("The table have all relations for proper column in the other tables")
-	void checkInsertIntoAllTableAndCheckOutputFromJoin() throws SQLException {
-		try (Connection connection = dataSource.getConnection()) {
-			Statement statement = connection.createStatement();
-			statement.execute("""
+			statement.execute(String.format("""
 							INSERT INTO CHAT values (1, 'programmer_chat');
 										INSERT INTO employee values (1, 'Vladislav', 'Tereshuk');
-										INSERT INTO employee_chat values (1, 1);
-					""");
-			ResultSet resultSet = statement.executeQuery("""
+										INSERT INTO %s values (1, 1);
+					""", tableName));
+			resultSet = statement.executeQuery(String.format("""
 					SELECT * FROM employee e
-					JOIN employee_chat ec on e.id = ec.employee_id
+					JOIN %s ec on e.id = ec.employee_id
 					JOIN chat c on ec.chat_id = c.id;
-					""");
-			boolean resultIsNotEmpty = resultSet.next();
+					""", tableName));
+			resultIsNotEmpty = resultSet.next();
 			assertTrue(resultIsNotEmpty);
 			List<String> stringColumns = new ArrayList<>();
 			stringColumns.add(resultSet.getString("firstname"));
